@@ -1,17 +1,18 @@
 package com.alan.webclientpratice.service;
 
+import com.alan.webclientpratice.dto.RankResponse;
+import com.alan.webclientpratice.dto.SummonerInfo;
+import com.alan.webclientpratice.dto.SummonerResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -29,39 +30,79 @@ public class ApiService {
         this.webClient = webClient;
     }
 
-    public HashMap<String,Object> getSummoner(String summonerName) throws JsonProcessingException {
+    public SummonerResponse getSummoner(String summonerName) throws JsonProcessingException {
 
-        Gson gson = new Gson();
-        String response = webClient.mutate()
+        SummonerResponse response = webClient.mutate()
                 .build()
                 .get()
                 .uri(searchUrl,summonerName)
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(SummonerResponse.class)
                 .block();
 
-        HashMap<String,Object> responseMap = new ObjectMapper().readValue(response,HashMap.class);
 
-        log.info("id : {}", responseMap.get("id").toString());
-        log.info("name : {}",responseMap.get("name").toString());
-        log.info("summonerLevel : {}",responseMap.get("summonerLevel").toString());
-
-        log.info(gson.toJson(response));
-
-        return responseMap;
+        return response;
     }
 
-    public String getSummonerRank(String encryptedSummonerId) throws JsonProcessingException {
+    public List<RankResponse> getSummonerRank(String encryptedSummonerId) throws JsonProcessingException {
 
-        String response = webClient.mutate()
+        List<RankResponse> response = webClient.mutate()
                 .build()
                 .get()
                 .uri(rankUrl,encryptedSummonerId)
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToFlux(RankResponse.class)
+                .collectList()
                 .block();
 
+
         return response;
+    }
+
+    public SummonerInfo getUserInfo(String summonerName) throws Exception {
+
+        List<SummonerInfo.SummonerRank> rankList = new ArrayList<>();
+        //userInfo
+        SummonerResponse user = getSummoner(summonerName);
+        String encryptedId = user.getId();
+
+
+        List<RankResponse> rankInfo = getSummonerRank(encryptedId);
+
+        for(RankResponse response : rankInfo) {
+            rankList.add(SummonerInfo.SummonerRank.builder()
+                    .queueType(response.getQueueType())
+                    .rank(response.getTier() + " " + response.getRank())
+                    .wins(response.getWins())
+                    .losses(response.getLosses())
+                    .build());
+        }
+
+        SummonerInfo info =  SummonerInfo.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .level(user.getSummonerLevel())
+                .profileIconId(user.getProfileIconId())
+                .revisionDate(LocalDateTime.now())
+                .rank(rankList).build();
+
+        return info;
+
+    }
+
+    public List<SummonerInfo> getMultiSearch(String keyword) throws Exception {
+        List<SummonerInfo> result = new ArrayList<>();
+
+        String[] arr = Arrays.stream(keyword.split("\n"))
+                .filter(s-> s.contains("님이"))
+                .map(s -> s.split("님이")[0])
+                .toArray(String[]::new);
+
+        for(String nickname : arr){
+            result.add(getUserInfo(nickname));
+        }
+
+        return result;
     }
 
 }
