@@ -1,5 +1,6 @@
 package com.alan.webclientpratice.controller;
 
+import com.alan.webclientpratice.dto.Mastery;
 import com.alan.webclientpratice.dto.RankResponse;
 import com.alan.webclientpratice.dto.SummonerInfo;
 import com.alan.webclientpratice.dto.SummonerResponse;
@@ -40,6 +41,12 @@ public class ApiController {
 
     }
 
+    @GetMapping("mastery")
+    public List<Mastery> getMastery(@RequestParam("encryptedSummonerId") String encryptedSummonerId) throws Exception{
+
+        return apiService.getMastery(encryptedSummonerId);
+    }
+
     @GetMapping("search")
     public SummonerInfo getSummonerInfo(@RequestParam("nickname") String nickname) throws Exception {
 
@@ -52,6 +59,11 @@ public class ApiController {
 
         return apiService.getMultiSearch(keyword);
 
+    }
+
+    @GetMapping("champion")
+    public String getChampion() throws Exception{
+        return apiService.getChampion();
     }
 
 }

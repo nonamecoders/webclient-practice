@@ -19,6 +19,7 @@ public class SummonerInfo {
     private LocalDateTime revisionDate;
 
     private List<SummonerRank> rank;
+    private List<Mastery> masteries;
 
 
     //rank
