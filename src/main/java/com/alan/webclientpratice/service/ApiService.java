@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.persistence.EntityManagerFactory;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,6 +19,15 @@ import java.util.stream.Collectors;
 public class ApiService {
 
     final WebClient webClient;
+
+    @Value("${api.baseUrl}")
+    private String baseUrl;
+
+    @Value("${api.matchBaseUrl}")
+    private String matchBaseUrl;
+
+    @Value("${api.matchUrl}")
+    private String matchUrl;
 
     @Value("${api.searchUrl}")
     private String searchUrl;
@@ -47,7 +55,7 @@ public class ApiService {
         SummonerResponse response = webClient.mutate()
                 .build()
                 .get()
-                .uri(searchUrl,summonerName)
+                .uri(baseUrl+searchUrl,summonerName)
                 .retrieve()
                 .bodyToMono(SummonerResponse.class)
                 .block();
@@ -61,12 +69,11 @@ public class ApiService {
         List<RankResponse> response = webClient.mutate()
                 .build()
                 .get()
-                .uri(rankUrl,encryptedSummonerId)
+                .uri(baseUrl+rankUrl,encryptedSummonerId)
                 .retrieve()
                 .bodyToFlux(RankResponse.class)
                 .collectList()
                 .block();
-
 
         return response;
     }
@@ -77,7 +84,6 @@ public class ApiService {
         //userInfo
         SummonerResponse user = getSummoner(summonerName);
         String encryptedId = user.getId();
-
 
         List<RankResponse> rankInfo = getSummonerRank(encryptedId);
         List<Mastery> masteries = getMastery(encryptedId);
@@ -97,9 +103,9 @@ public class ApiService {
                 .name(user.getName())
                 .level(user.getSummonerLevel())
                 .profileIconId(user.getProfileIconId())
-                .revisionDate(LocalDateTime.now())
+                .revisionDate(user.getRevisionDate())
                 .rank(rankList)
-                .masteries(masteries)
+                .masteries(masteries.stream().limit(5).collect(Collectors.toList()))
                 .build();
 
         return info;
@@ -125,7 +131,7 @@ public class ApiService {
         List<Mastery> response = webClient.mutate()
                 .build()
                 .get()
-                .uri(masteryUrl,encryptedSummonerId)
+                .uri(baseUrl+masteryUrl,encryptedSummonerId)
                 .retrieve()
                 .bodyToFlux(Mastery.class)
                 .collectList()
@@ -185,4 +191,18 @@ public class ApiService {
         return response;
     }
 
+    public List<String> getMatchList(String puuid) {
+
+        List<String> response = webClient.mutate()
+                .build()
+                .get()
+                .uri(matchBaseUrl+matchUrl,puuid,0,10)
+                .retrieve()
+                .bodyToFlux(String.class)
+                .collectList()
+                .block();
+
+        return response;
+
+    }
 }

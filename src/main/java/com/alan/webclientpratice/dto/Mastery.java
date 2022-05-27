@@ -2,6 +2,7 @@ package com.alan.webclientpratice.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import net.minidev.json.annotate.JsonIgnore;
 
 @Data
 public class Mastery {
@@ -14,6 +15,8 @@ public class Mastery {
     private Long championPointsUntilNextLevel;
     private Boolean chestGranted;
     private Integer tokensEarned;
+
+    @JsonIgnore
     private String summonerId;
 
     private ChampionDetail champion;

@@ -16,7 +16,7 @@ public class SummonerInfo {
     private String name;
     private Long level;
     private Integer profileIconId;
-    private LocalDateTime revisionDate;
+    private Long revisionDate;
 
     private List<SummonerRank> rank;
     private List<Mastery> masteries;

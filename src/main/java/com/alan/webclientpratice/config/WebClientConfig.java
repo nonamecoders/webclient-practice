@@ -25,9 +25,6 @@ public class WebClientConfig {
     @Value("${api.token}")
     private String token;
 
-    @Value("${api.baseUrl}")
-    private String baseUrl;
-
     @Bean
     public WebClient webClient() {
 
@@ -44,7 +41,7 @@ public class WebClientConfig {
                 .build();
 
         return WebClient.builder()
-                .baseUrl(baseUrl)
+//                .baseUrl(baseUrl)
                 .defaultHeaders(httpHeaders -> {
                     httpHeaders.add("X-Riot-Token",token);
                 })

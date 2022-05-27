@@ -66,4 +66,9 @@ public class ApiController {
         return apiService.getChampion();
     }
 
+    @GetMapping("matchid")
+    public List<String> getMatchList(@RequestParam("puuid")String puuid) throws Exception{
+        return apiService.getMatchList(puuid);
+    }
+
 }
