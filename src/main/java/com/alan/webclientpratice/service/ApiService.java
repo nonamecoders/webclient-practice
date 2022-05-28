@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -57,6 +58,8 @@ public class ApiService {
                 .get()
                 .uri(baseUrl+searchUrl,summonerName)
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError()|| status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class).map(body ->new RuntimeException(body)))
                 .bodyToMono(SummonerResponse.class)
                 .block();
 

@@ -5,17 +5,12 @@ import com.alan.webclientpratice.dto.RankResponse;
 import com.alan.webclientpratice.dto.SummonerInfo;
 import com.alan.webclientpratice.dto.SummonerResponse;
 import com.alan.webclientpratice.service.ApiService;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -26,9 +21,10 @@ public class ApiController {
     private final ApiService apiService;
 
     @GetMapping("summoner")
-    public SummonerResponse getSummoner(@RequestParam("summonerName") String summonerName) throws Exception {
+    public ResponseEntity<SummonerResponse> getSummoner(@RequestParam("summonerName") String summonerName) throws Exception {
 
-        return apiService.getSummoner(summonerName);
+        return ResponseEntity.ok()
+                .body(apiService.getSummoner(summonerName));
 
     }
 
@@ -55,14 +51,15 @@ public class ApiController {
     }
 
     @PostMapping("multiSearch")
-    public List<SummonerInfo> getMultiSearch(@RequestBody String keyword) throws Exception{
+    public ResponseEntity<List<SummonerInfo>> getMultiSearch(@RequestBody String keyword) throws Exception{
 
-        return apiService.getMultiSearch(keyword);
+        return ResponseEntity.ok()
+                        .body(apiService.getMultiSearch(keyword));
 
     }
 
     @GetMapping("champion")
-    public String getChampion() throws Exception{
+    public String getChampion() throws Exception {
         return apiService.getChampion();
     }
 
