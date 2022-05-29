@@ -73,16 +73,15 @@ public class RequestLoggingFilterFunction implements ExchangeFilterFunction {
                                 .doOnComplete(() -> {
                                     if (!responseLogged.getAndSet(true)) {
                                         log.info("Response >>> requestId: [{}], totalTime : {}ms, status : {} {} \n responseBody : {}",
-                                                clientRequestId, stopWatch.getTotalTimeMillis(), response.statusCode().value(),response.statusCode().getReasonPhrase(),capturedResponseBody.toString());
+                                                clientRequestId, stopWatch.getTotalTimeMillis(), response.statusCode().value(), response.statusCode().getReasonPhrase(), capturedResponseBody.toString());
                                     }
                                 })
                                 .doOnError(error -> {
-                                            if (!responseLogged.getAndSet(true)) {
-                                                log.info("Error Response >>> requestId [{}] totalTime : {}ms\n{}",
-                                                        clientRequestId, stopWatch.getTotalTimeMillis(),error.getMessage());
-                                            }
-                                        }
-                                )
+                                    if (!responseLogged.getAndSet(true)) {
+                                        log.info("Error Response >>> requestId [{}] totalTime : {}ms\n{}",
+                                                clientRequestId, stopWatch.getTotalTimeMillis(),error.getMessage());
+                                    }
+                                })
                         ).build()
                 );
     }

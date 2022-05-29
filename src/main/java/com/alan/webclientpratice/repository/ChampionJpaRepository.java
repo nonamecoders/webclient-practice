@@ -3,6 +3,6 @@ package com.alan.webclientpratice.repository;
 import com.alan.webclientpratice.dto.ChampionDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ChampionRepository extends JpaRepository<ChampionDto, Long> {
+public interface ChampionJpaRepository extends JpaRepository<ChampionDto, Long> {
 
 }

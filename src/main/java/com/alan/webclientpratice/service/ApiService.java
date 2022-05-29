@@ -1,13 +1,12 @@
 package com.alan.webclientpratice.service;
 
 import com.alan.webclientpratice.dto.*;
-import com.alan.webclientpratice.repository.ChampionRepository;
+import com.alan.webclientpratice.repository.ChampionJpaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -42,13 +41,13 @@ public class ApiService {
     final EntityManagerFactory entityManagerFactory;
 
     final
-    ChampionRepository championRepository;
+    ChampionJpaRepository championJpaRepository;
 
 
-    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionRepository championRepository) {
+    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionJpaRepository championJpaRepository) {
         this.webClient = webClient;
         this.entityManagerFactory = entityManagerFactory;
-        this.championRepository = championRepository;
+        this.championJpaRepository = championJpaRepository;
     }
 
     public SummonerResponse getSummoner(String summonerName) throws JsonProcessingException {
@@ -58,7 +57,7 @@ public class ApiService {
                 .get()
                 .uri(baseUrl+searchUrl,summonerName)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError()|| status.is5xxServerError(),
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse -> clientResponse.bodyToMono(String.class).map(body ->new RuntimeException(body)))
                 .bodyToMono(SummonerResponse.class)
                 .block();
@@ -141,7 +140,7 @@ public class ApiService {
                 .block();
 
         response.stream().forEach(r->{
-            ChampionDto dto = championRepository.getById(r.getChampionId());
+            ChampionDto dto = championJpaRepository.getById(r.getChampionId());
             Mastery.ChampionDetail detail = Mastery.ChampionDetail.builder()
                     .ChampionId(dto.getChampionId())
                     .name(dto.getName())
@@ -187,7 +186,7 @@ public class ApiService {
                     .imageSprite(champion.getImage().getSprite())
                     .build();
 
-            championRepository.save(dto);
+            championJpaRepository.save(dto);
 
         }
 

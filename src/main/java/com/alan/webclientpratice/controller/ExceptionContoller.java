@@ -3,7 +3,6 @@ package com.alan.webclientpratice.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,9 +13,7 @@ import java.nio.file.AccessDeniedException;
 public class ExceptionContoller {
 
     // 400
-    @ExceptionHandler({
-            RuntimeException.class
-    })
+    @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<Object> BadRequestException(final RuntimeException ex) {
         log.warn("error", ex);
         return ResponseEntity.badRequest().body(ex.getMessage());
