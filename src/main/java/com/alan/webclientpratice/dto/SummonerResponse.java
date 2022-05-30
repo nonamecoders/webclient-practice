@@ -1,8 +1,11 @@
 package com.alan.webclientpratice.dto;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class SummonerResponse {
 
     private String id;
@@ -13,4 +16,14 @@ public class SummonerResponse {
     private Integer profileIconId;
     private Long revisionDate;
 
+    @Builder
+    public SummonerResponse(String id, String puuid, String accountId, String name, Long summonerLevel, Integer profileIconId, Long revisionDate) {
+        this.id = id;
+        this.puuid = puuid;
+        this.accountId = accountId;
+        this.name = name;
+        this.summonerLevel = summonerLevel;
+        this.profileIconId = profileIconId;
+        this.revisionDate = revisionDate;
+    }
 }
