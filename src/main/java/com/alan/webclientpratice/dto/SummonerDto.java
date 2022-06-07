@@ -12,9 +12,6 @@ import javax.persistence.*;
 @Table(name ="SUMMONER")
 public class SummonerDto {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "encrypted_id")
     private String encryptedId;
 

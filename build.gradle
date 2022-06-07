@@ -43,6 +43,9 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
+	//ModerMapper
+	implementation 'org.modelmapper:modelmapper:2.3.0'
+
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 	annotationProcessor 'org.projectlombok:lombok'
