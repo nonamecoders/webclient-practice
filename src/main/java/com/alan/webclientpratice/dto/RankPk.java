@@ -1,10 +1,12 @@
 package com.alan.webclientpratice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 public class RankPk implements Serializable {

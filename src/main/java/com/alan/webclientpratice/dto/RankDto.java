@@ -9,15 +9,13 @@ import java.io.Serializable;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 @IdClass(RankPk.class)
 @RequiredArgsConstructor
 @Table(name ="RANK")
 public class RankDto implements Serializable {
 
     private static final long serialVersionUID = 1l;
-
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
 
     @Column
     private String leagueId;

@@ -4,15 +4,10 @@ import com.alan.webclientpratice.dto.*;
 import com.alan.webclientpratice.repository.ChampionJpaRepository;
 import com.alan.webclientpratice.repository.RankJpaRepository;
 import com.alan.webclientpratice.repository.SummonerJpaRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.istack.FinalArrayList;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,8 +21,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class ApiService {
 
-    @Autowired
-    private ApiCache apiCache;
+    final ApiCache apiCache;
     final WebClient webClient;
 
     final SummonerJpaRepository summonerJpaRepository;
@@ -57,101 +51,27 @@ public class ApiService {
     final
     ChampionJpaRepository championJpaRepository;
 
-    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionJpaRepository championJpaRepository, SummonerJpaRepository summonerJpaRepository,RankJpaRepository rankJpaRepository) {
+    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionJpaRepository championJpaRepository, SummonerJpaRepository summonerJpaRepository,RankJpaRepository rankJpaRepository,ApiCache apiCache) {
         this.webClient = webClient;
         this.entityManagerFactory = entityManagerFactory;
         this.championJpaRepository = championJpaRepository;
         this.summonerJpaRepository = summonerJpaRepository;
         this.rankJpaRepository = rankJpaRepository;
+        this.apiCache = apiCache;
     }
 
-    @Transactional(readOnly = true)
-    public SummonerResponse getSummoner(String summonerName) throws JsonProcessingException {
+    public SummonerResponse getSummoner(String summonerName) {
 
-        SummonerResponse response;
-        SummonerDto data = apiCache.getSummonerData(summonerName);
-
-        if(data != null){
-            response = SummonerResponse.builder()
-                    .id(data.getEncryptedId())
-                    .puuid(data.getPuuid())
-                    .accountId(data.getAccountId())
-                    .name(data.getName())
-                    .summonerLevel(data.getSummonerLevel())
-                    .profileIconId(data.getProfileIconId())
-                    .revisionDate(data.getRevisionDate())
-                    .build();
-            return response;
-
-        } else {
-
-            response = webClient.mutate()
-                    .build()
-                    .get()
-                    .uri(baseUrl + searchUrl, summonerName)
-                    .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                            clientResponse -> clientResponse.bodyToMono(String.class).map(body -> new RuntimeException(body)))
-                    .bodyToMono(SummonerResponse.class)
-                    .block();
-
-            summonerJpaRepository.save(SummonerDto.builder()
-                    .encryptedId(response.getId())
-                    .accountId(response.getAccountId())
-                    .puuid(response.getPuuid())
-                    .name(response.getName().replaceAll(" ","").toLowerCase())
-                    .profileIconId(response.getProfileIconId())
-                    .revisionDate(response.getRevisionDate())
-                    .summonerLevel(response.getSummonerLevel())
-                    .build());
-        }
+        SummonerResponse response = apiCache.getSummonerData(summonerName);
 
         return response;
+
     }
 
-    public List<RankResponse> getSummonerRank(String encryptedSummonerId) throws JsonProcessingException {
+    public List<RankResponse> getSummonerRank(String encryptedSummonerId) {
 
-        List<RankResponse> response = new ArrayList<>();
-        List<RankDto> dataList = apiCache.getRankData(encryptedSummonerId);
+        List<RankResponse> response = apiCache.getRankData(encryptedSummonerId);
 
-        log.info("dataList.size() : {}, ", dataList.size());
-        if(dataList.size() > 0) {
-            log.info(" >>>>>>>>>> cache select");
-            ModelMapper modelMapper = new ModelMapper();
-            for(RankDto data : dataList){
-                RankResponse res = modelMapper.map(data,RankResponse.class);
-                response.add(res);
-            }
-        } else {
-            log.info(" >>>>>>>>>> api called");
-
-            response = webClient.mutate()
-                    .build()
-                    .get()
-                    .uri(baseUrl + rankUrl, encryptedSummonerId)
-                    .retrieve()
-                    .bodyToFlux(RankResponse.class)
-                    .collectList()
-                    .block();
-
-            for (RankResponse rank : response) {
-                rankJpaRepository.save(RankDto.builder()
-                        .leagueId(rank.getLeagueId())
-                        .queueType(rank.getQueueType())
-                        .tier(rank.getTier())
-                        .rank(rank.getRank())
-                        .summonerId(rank.getSummonerId())
-                        .summonerName(rank.getSummonerName())
-                        .leaguePoints(rank.getLeaguePoints())
-                        .wins(rank.getWins())
-                        .losses(rank.getLosses())
-                        .hotStreak(rank.getHotStreak())
-                        .veteran(rank.getVeteran())
-                        .freshBlood(rank.getFreshBlood())
-                        .inactive(rank.getInactive())
-                        .build());
-            }
-        }
         return response;
     }
 
@@ -215,8 +135,8 @@ public class ApiService {
                 .limit(5)
                 .collect(Collectors.toList());
 
-        response.stream().limit(5).forEach(r->{
-            ChampionDto dto = championJpaRepository.getById(r.getChampionId());
+        response.forEach(r->{
+            ChampionDto dto = apiCache.getChampion(r.getChampionId());
             Mastery.ChampionDetail detail = Mastery.ChampionDetail.builder()
                     .ChampionId(dto.getChampionId())
                     .name(dto.getName())
@@ -236,7 +156,7 @@ public class ApiService {
         String response = webClient.mutate()
                 .build()
                 .get()
-                .uri("https://ddragon.leagueoflegends.com/cdn/12.10.1/data/ko_KR/champion.json")
+                .uri("http://ddragon.leagueoflegends.com/cdn/12.11.1/data/ko_KR/champion.json")
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
