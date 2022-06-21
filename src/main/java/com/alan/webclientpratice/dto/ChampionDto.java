@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "CHAMPION")
 //@IdClass(ChampionPk.class)
-public class ChampionDto {
+public class ChampionDto implements Serializable {
 
 
 //    @Id

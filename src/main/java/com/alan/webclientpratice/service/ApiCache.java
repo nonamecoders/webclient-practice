@@ -1,6 +1,7 @@
 package com.alan.webclientpratice.service;
 
 import com.alan.webclientpratice.dto.*;
+import com.alan.webclientpratice.mapper.ChampionMapper;
 import com.alan.webclientpratice.repository.ChampionJpaRepository;
 import com.alan.webclientpratice.repository.RankJpaRepository;
 import com.alan.webclientpratice.repository.SummonerJpaRepository;
@@ -11,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +41,11 @@ public class ApiCache {
     @Value("${api.matchUrl}")
     private String matchUrl;
 
-    @Value("${api.searchUrl}")
-    private String searchUrl;
+    @Value("${api.summonerNameSearchUrl}")
+    private String summonerNameSearchUrl;
+
+    @Value("${api.puuidSearchUrl}")
+    private String puuidSearchUrl;
 
     @Value("${api.rankUrl}")
     private String rankUrl;
@@ -48,12 +53,23 @@ public class ApiCache {
     @Value("${api.masteryUrl}")
     private String masteryUrl;
 
-    @Cacheable(value = "summoner",key = "#summonerName")
-    public SummonerResponse getSummonerData(String summonerName) throws RuntimeException{
-        SummonerDto data = summonerJpaRepository.findByName(summonerName.replaceAll(" ",""));
+    public SummonerResponse getSummonerData(String summoner,String command) throws RuntimeException, ParseException {
+        String searchUrl = "";
+        SummonerDto data = null;
         SummonerResponse response;
 
-        if(data != null){
+        if(command.equals("summonerName")) {
+            data = summonerJpaRepository.findByName(summoner.replaceAll(" ",""));
+            searchUrl=summonerNameSearchUrl;
+        } else if (command.equals("puuid")) {
+            data = summonerJpaRepository.findByPuuid(summoner);
+            searchUrl = puuidSearchUrl;
+        }
+
+        long currentTime = System.currentTimeMillis();
+
+        if(data != null && currentTime - data.getRevisionDate() < 86400l){
+
             response = SummonerResponse.builder()
                     .id(data.getEncryptedId())
                     .puuid(data.getPuuid())
@@ -71,7 +87,7 @@ public class ApiCache {
             response = webClient.mutate()
                     .build()
                     .get()
-                    .uri(baseUrl + searchUrl, summonerName)
+                    .uri(baseUrl + searchUrl, summoner)
                     .retrieve()
                     .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                             clientResponse -> clientResponse.bodyToMono(String.class).map(body -> new RuntimeException(body)))
@@ -127,20 +143,28 @@ public class ApiCache {
     }
 
     @Cacheable(value = "champion")
-    public List<ChampionDto> getChampionList() {
-        List<ChampionDto> data = championJpaRepository.findAll();
-        log.info("data : {}", data);
+    public List<ChampionResponse> getChampionList() {
+        List<ChampionDto> data = this.championJpaRepository.findAll();
+        List<ChampionResponse> result = new ArrayList<>();
+        data.forEach(
+                c-> {
+                    result.add(ChampionMapper.INSTANCE.toChampionResponse(c));
+                }
+        );
 
-        return data;
+        log.info("data : {}", result);
+
+        return result;
     }
 
     @Cacheable(value = "champion", key = "#id")
-    public ChampionDto getChampion(Long id) {
-        ChampionDto data = championJpaRepository.findById(id)
+    public ChampionResponse getChampion(Long id) {
+        ChampionDto data = this.championJpaRepository.findById(id)
                 .orElseGet(ChampionDto::new);
-        log.info("data : {}", data);
+        ChampionResponse result = ChampionMapper.INSTANCE.toChampionResponse(data);
+        log.info("data : {}", result);
 
-        return data;
+        return result;
     }
 
 }

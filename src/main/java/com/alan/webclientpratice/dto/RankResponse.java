@@ -4,9 +4,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class RankResponse {
+public class RankResponse implements Serializable {
 
     private String leagueId;
     private String summonerId; //	string	Player's encrypted summonerId.

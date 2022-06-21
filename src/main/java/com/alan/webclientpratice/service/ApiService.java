@@ -37,12 +37,6 @@ public class ApiService {
     @Value("${api.matchUrl}")
     private String matchUrl;
 
-    @Value("${api.searchUrl}")
-    private String searchUrl;
-
-    @Value("${api.rankUrl}")
-    private String rankUrl;
-
     @Value("${api.masteryUrl}")
     private String masteryUrl;
 
@@ -60,9 +54,9 @@ public class ApiService {
         this.apiCache = apiCache;
     }
 
-    public SummonerResponse getSummoner(String summonerName) {
+    public SummonerResponse getSummoner(String summonerName,String commnad) throws Exception{
 
-        SummonerResponse response = apiCache.getSummonerData(summonerName);
+        SummonerResponse response = apiCache.getSummonerData(summonerName, commnad);
 
         return response;
 
@@ -75,11 +69,11 @@ public class ApiService {
         return response;
     }
 
-    public SummonerInfo getUserInfo(String summonerName) throws Exception {
+    public SummonerInfo getUserInfo(String summoner,String command) throws Exception {
 
         List<SummonerInfo.SummonerRank> rankList = new ArrayList<>();
         //userInfo
-        SummonerResponse user = getSummoner(summonerName);
+        SummonerResponse user = getSummoner(summoner,command);
         String encryptedId = user.getId();
 
         List<RankResponse> rankInfo = getSummonerRank(encryptedId);
@@ -118,7 +112,7 @@ public class ApiService {
                 .toArray(String[]::new);
 
         for(String nickname : arr){
-            result.add(getUserInfo(nickname));
+            result.add(getUserInfo(nickname,"summonerName"));
         }
 
         return result;
@@ -136,14 +130,14 @@ public class ApiService {
                 .collect(Collectors.toList());
 
         response.forEach(r->{
-            ChampionDto dto = apiCache.getChampion(r.getChampionId());
+            ChampionResponse championResponse = apiCache.getChampion(r.getChampionId());
             Mastery.ChampionDetail detail = Mastery.ChampionDetail.builder()
-                    .ChampionId(dto.getChampionId())
-                    .name(dto.getName())
-                    .title(dto.getTitle())
-                    .imageFullUrl(dto.getImageFullUrl())
-                    .imageSprite(dto.getImageSprite())
-                    .tags(dto.getTags())
+                    .ChampionId(championResponse.getChampionId())
+                    .name(championResponse.getName())
+                    .title(championResponse.getTitle())
+                    .imageFullUrl(championResponse.getImageFullUrl())
+                    .imageSprite(championResponse.getImageSprite())
+                    .tags(String.join(",", championResponse.getTags()))
                     .build();
             r.setChampion(detail);
         });
@@ -202,6 +196,19 @@ public class ApiService {
 
         return response;
 
+    }
+
+    public List<ChampionResponse> getChampionList(List<String> tag){
+        List<ChampionResponse> result= apiCache.getChampionList();
+
+        //sorting
+        if(tag != null) {
+            for(String s : tag){
+                result = result.stream().filter(r-> Arrays.stream(r.getTags()).anyMatch(rr->rr.equals(s))).collect(Collectors.toList());
+            }
+        }
+
+        return result;
     }
 
 }

@@ -7,4 +7,6 @@ public interface SummonerJpaRepository extends JpaRepository<SummonerDto,String>
 
     SummonerDto findByName(String name);
 
+    SummonerDto findByPuuid(String name);
+
 }

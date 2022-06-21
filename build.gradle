@@ -43,11 +43,23 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
-	//ModerMapper
+	//ModelMapper
 	implementation 'org.modelmapper:modelmapper:2.3.0'
+	//mapstruct
+	implementation 'org.mapstruct:mapstruct:1.4.1.Final'
+	implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
+	annotationProcessor "org.mapstruct:mapstruct-processor:1.4.1.Final"
+	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+	//Cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation (group: 'it.ozimov', name: 'embedded-redis', version: '0.7.3') {
+		exclude group: 'org.slf4j', module: 'slf4j-simple'
+	}
 
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

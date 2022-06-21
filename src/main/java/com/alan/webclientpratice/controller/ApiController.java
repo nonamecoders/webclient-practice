@@ -1,13 +1,10 @@
 package com.alan.webclientpratice.controller;
 
-import com.alan.webclientpratice.dto.Mastery;
-import com.alan.webclientpratice.dto.RankResponse;
-import com.alan.webclientpratice.dto.SummonerInfo;
-import com.alan.webclientpratice.dto.SummonerResponse;
+import com.alan.webclientpratice.dto.*;
 import com.alan.webclientpratice.service.ApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +17,11 @@ public class ApiController {
 
     private final ApiService apiService;
 
-    @GetMapping("summoner")
-    public ResponseEntity<SummonerResponse> getSummoner(@RequestParam("summonerName") String summonerName) throws Exception {
+    @GetMapping("summoner/{command}")
+    public ResponseEntity<SummonerResponse> getSummoner(@PathVariable("command") String command,@RequestParam("summoner") String summoner) throws Exception {
 
         return ResponseEntity.ok()
-                .body(apiService.getSummoner(summonerName));
+                .body(apiService.getSummoner(summoner,command));
 
     }
 
@@ -43,10 +40,10 @@ public class ApiController {
         return apiService.getMastery(encryptedSummonerId);
     }
 
-    @GetMapping("search")
-    public SummonerInfo getSummonerInfo(@RequestParam("nickname") String nickname) throws Exception {
+    @GetMapping("search/{command}")
+    public SummonerInfo getSummonerInfo(@PathVariable("command")String command, @RequestParam("summoner") String summoner) throws Exception {
 
-        return apiService.getUserInfo(nickname);
+        return apiService.getUserInfo(summoner,command);
 
     }
 
@@ -58,7 +55,7 @@ public class ApiController {
 
     }
 
-    @GetMapping("champion")
+    @GetMapping("championFromRiot")
     public String getChampion() throws Exception {
         return apiService.getChampion();
     }
@@ -68,4 +65,18 @@ public class ApiController {
         return apiService.getMatchList(puuid);
     }
 
+    @GetMapping("champion")
+    public List<ChampionResponse> getChampionList(@RequestParam(value = "tag",required = false) List<String> tag){
+
+        log.info("s : {}", tag);
+
+        return apiService.getChampionList(tag);
+    }
+
+    @CacheEvict(value = "champion", allEntries = true)
+    @GetMapping("evict")
+    public String cacheEvict(){
+
+        return "delete";
+    }
 }
