@@ -38,7 +38,7 @@ public class ApiCache {
     @Value("${api.matchBaseUrl}")
     private String matchBaseUrl;
 
-    @Value("${api.matchUrl}")
+    @Value("${api.matchIdUrl}")
     private String matchUrl;
 
     @Value("${api.summonerNameSearchUrl}")

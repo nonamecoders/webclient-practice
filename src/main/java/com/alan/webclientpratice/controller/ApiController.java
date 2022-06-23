@@ -1,6 +1,8 @@
 package com.alan.webclientpratice.controller;
 
 import com.alan.webclientpratice.dto.*;
+import com.alan.webclientpratice.dto.match.MatchResponse;
+import com.alan.webclientpratice.dto.perk.PerkDto;
 import com.alan.webclientpratice.service.ApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +63,7 @@ public class ApiController {
     }
 
     @GetMapping("matchid")
-    public List<String> getMatchList(@RequestParam("puuid")String puuid) throws Exception{
+    public MatchResponse getMatchList(@RequestParam("puuid")String puuid) throws Exception{
         return apiService.getMatchList(puuid);
     }
 
@@ -79,4 +81,10 @@ public class ApiController {
 
         return "delete";
     }
+
+    @GetMapping("perk")
+    public List<PerkDto> getPerkInfo(){
+        return apiService.getPerkInfo();
+    }
+
 }

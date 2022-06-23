@@ -1,7 +1,13 @@
 package com.alan.webclientpratice.service;
 
 import com.alan.webclientpratice.dto.*;
+import com.alan.webclientpratice.dto.match.MatchResponse;
+import com.alan.webclientpratice.dto.match.ParticipantResponse;
+import com.alan.webclientpratice.dto.match.entity.MatchInfoDto;
+import com.alan.webclientpratice.dto.match.entity.MatchMetaDataDto;
+import com.alan.webclientpratice.dto.perk.PerkDto;
 import com.alan.webclientpratice.repository.ChampionJpaRepository;
+import com.alan.webclientpratice.repository.PerkJpaRepository;
 import com.alan.webclientpratice.repository.RankJpaRepository;
 import com.alan.webclientpratice.repository.SummonerJpaRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,29 +36,38 @@ public class ApiService {
 
     final RankJpaRepository rankJpaRepository;
 
+    final PerkJpaRepository perkJpaRepository;
+
     @Value("${api.baseUrl}")
     private String baseUrl;
 
     @Value("${api.matchBaseUrl}")
     private String matchBaseUrl;
 
-    @Value("${api.matchUrl}")
-    private String matchUrl;
+    @Value("${api.matchIdUrl}")
+    private String matchIdUrl;
+
+    @Value("${api.matchInfoUrl}")
+    private String matchInfoUrl;
 
     @Value("${api.masteryUrl}")
     private String masteryUrl;
+
+    @Value("${api.perkInfoUrl}")
+    private String perkInfoUrl;
 
     final EntityManagerFactory entityManagerFactory;
 
     final
     ChampionJpaRepository championJpaRepository;
 
-    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionJpaRepository championJpaRepository, SummonerJpaRepository summonerJpaRepository,RankJpaRepository rankJpaRepository,ApiCache apiCache) {
+    public ApiService(WebClient webClient, EntityManagerFactory entityManagerFactory, ChampionJpaRepository championJpaRepository, SummonerJpaRepository summonerJpaRepository,RankJpaRepository rankJpaRepository,PerkJpaRepository perkJpaRepository,ApiCache apiCache) {
         this.webClient = webClient;
         this.entityManagerFactory = entityManagerFactory;
         this.championJpaRepository = championJpaRepository;
         this.summonerJpaRepository = summonerJpaRepository;
         this.rankJpaRepository = rankJpaRepository;
+        this.perkJpaRepository = perkJpaRepository;
         this.apiCache = apiCache;
     }
 
@@ -183,18 +200,21 @@ public class ApiService {
         return response;
     }
 
-    public List<String> getMatchList(String puuid) {
+    public MatchResponse getMatchList(String puuid) throws Exception {
 
-        List<String> response = webClient.mutate()
+        String[] response = webClient.mutate()
                 .build()
                 .get()
-                .uri(matchBaseUrl+matchUrl,puuid,0,10)
+                .uri(matchBaseUrl+ matchIdUrl,puuid,0,10)
                 .retrieve()
-                .bodyToFlux(String.class)
-                .collectList()
+                .bodyToMono(String[].class)
                 .block();
 
-        return response;
+        List<String> result = Arrays.asList(response);
+
+        return getMatchInfo(result.get(0));
+
+//        return result;
 
     }
 
@@ -211,4 +231,54 @@ public class ApiService {
         return result;
     }
 
+    public MatchResponse getMatchInfo(String matchId) throws Exception{
+
+        MatchResponse response = webClient.mutate()
+                .build()
+                .get()
+                .uri(matchBaseUrl+ matchInfoUrl,matchId)
+                .retrieve()
+                .bodyToMono(MatchResponse.class)
+                .block();
+
+        MatchMetaDataDto metaDataDto = MatchMetaDataDto.builder()
+                .matchId(response.getMetadata().getMatchId())
+                .dataVersion(response.getMetadata().getDataVersion())
+                .participants(response.getMetadata().getParticipants())
+                .build();
+        List<MatchInfoDto> matchInfoDtoList = new ArrayList<>();
+
+        return response;
+    }
+
+
+    public List<PerkDto> getPerkInfo() {
+
+        List<PerkDto> response = webClient.mutate()
+                .build()
+                .get()
+                .uri(perkInfoUrl)
+                .retrieve()
+                .bodyToFlux(PerkDto.class)
+                .collectList()
+                .block();
+
+        perkJpaRepository.saveAll(response);
+
+        return response;
+    }
+
+    public void mergeMatchData () {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        tx.begin();
+
+        try {
+            //todo
+
+        } catch (Exception e){
+            log.info("error message : {}", e.getMessage());
+        }
+    }
 }
