@@ -4,15 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class ChallengeResponse {
+public class ChallengeResponse implements Serializable {
+
+    private static final long serialVersionUID = 1l;
+
     @JsonProperty("12AssistStreakCount")
     private Integer _12AssistStreakCount;
     private Integer abilityUses;
     private Integer acesBefore15Minutes;
-    private Double alliedJungleMonsterKills;
-    private Integer baronBuffGoldAdvantageOverThreshold;
+    private Integer alliedJungleMonsterKills;
     private Integer baronTakedowns;
     private Integer blastConeOppositeOpponentCount;
     private Integer bountyGold;

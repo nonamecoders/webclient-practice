@@ -1,6 +1,6 @@
 package com.alan.webclientpratice.dto.match.entity;
 
-import com.alan.webclientpratice.mapper.StringArrayConverter;
+import com.alan.webclientpratice.mapper.converter.GenericJsonConverter;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,18 +12,24 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @Entity
+@EqualsAndHashCode
 @Table(name = "MATCH_METADATA")
 public class MatchMetaDataDto implements Serializable {
 
+    private static final long serialVersionUID = 1l;
+
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name ="MATCH_ID")
     private String matchId;
 
-    @Column
+    @Column(name = "DATA_VERSION")
     private String dataVersion;
 
-    @Column
-    @Convert(converter = StringArrayConverter.class)
+    @Column(length = 1000)
+    @Convert(converter = GenericJsonConverter.class)
     private List<String> participants;
 
     @Builder
@@ -32,5 +38,4 @@ public class MatchMetaDataDto implements Serializable {
         this.dataVersion = dataVersion;
         this.participants = participants;
     }
-
 }

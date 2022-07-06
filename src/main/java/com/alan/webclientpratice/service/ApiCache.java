@@ -55,7 +55,7 @@ public class ApiCache {
 
     public SummonerResponse getSummonerData(String summoner,String command) throws RuntimeException, ParseException {
         String searchUrl = "";
-        SummonerDto data = null;
+        SummonerDto data = new SummonerDto();
         SummonerResponse response;
 
         if(command.equals("summonerName")) {
@@ -110,9 +110,7 @@ public class ApiCache {
 
     @Cacheable(value = "rank",key = "#encryptedSummonerId")
     public List<RankResponse> getRankData(String encryptedSummonerId) {
-        List<RankResponse> response = new ArrayList<>();
-
-            response = webClient.mutate()
+        List<RankResponse> response = webClient.mutate()
                     .build()
                     .get()
                     .uri(baseUrl + rankUrl, encryptedSummonerId)
@@ -152,8 +150,6 @@ public class ApiCache {
                 }
         );
 
-        log.info("data : {}", result);
-
         return result;
     }
 
@@ -162,7 +158,6 @@ public class ApiCache {
         ChampionDto data = this.championJpaRepository.findById(id)
                 .orElseGet(ChampionDto::new);
         ChampionResponse result = ChampionMapper.INSTANCE.toChampionResponse(data);
-        log.info("data : {}", result);
 
         return result;
     }

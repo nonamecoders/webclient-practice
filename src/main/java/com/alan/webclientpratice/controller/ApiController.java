@@ -1,7 +1,10 @@
 package com.alan.webclientpratice.controller;
 
 import com.alan.webclientpratice.dto.*;
+import com.alan.webclientpratice.dto.match.ChallengeResponse;
 import com.alan.webclientpratice.dto.match.MatchResponse;
+import com.alan.webclientpratice.dto.match.entity.MatchInfoDto;
+import com.alan.webclientpratice.dto.match.entity.StyleDto;
 import com.alan.webclientpratice.dto.perk.PerkDto;
 import com.alan.webclientpratice.service.ApiService;
 import lombok.RequiredArgsConstructor;
@@ -62,9 +65,14 @@ public class ApiController {
         return apiService.getChampion();
     }
 
-    @GetMapping("matchid")
-    public MatchResponse getMatchList(@RequestParam("puuid")String puuid) throws Exception{
+    @GetMapping("match")
+    public List<MatchResponse> getMatchList(@RequestParam("puuid")String puuid) throws Exception{
         return apiService.getMatchList(puuid);
+    }
+
+    @GetMapping("match/info")
+    public MatchInfoDto getMatch(@RequestParam("puuid")String puuid, @RequestParam(name = "matchid",required = false)String matchid) throws Exception {
+        return apiService.getMatch(puuid,matchid);
     }
 
     @GetMapping("champion")
@@ -76,8 +84,15 @@ public class ApiController {
     }
 
     @CacheEvict(value = "champion", allEntries = true)
-    @GetMapping("evict")
+    @GetMapping("evict/champion")
     public String cacheEvict(){
+
+        return "delete";
+    }
+
+    @CacheEvict(value = "rank", allEntries = true)
+    @GetMapping("evict/rank")
+    public String cacheEvictRank(){
 
         return "delete";
     }
@@ -85,6 +100,21 @@ public class ApiController {
     @GetMapping("perk")
     public List<PerkDto> getPerkInfo(){
         return apiService.getPerkInfo();
+    }
+
+    @GetMapping("test/challenge")
+    public ChallengeResponse getChallenges() {
+        return apiService.getChallenges();
+    }
+
+    @GetMapping("test/match")
+    public List<MatchInfoDto> getMatchInfoOne() {
+        return apiService.getMatchInfoOne();
+    }
+
+    @GetMapping("style")
+    public List<StyleDto> getStyle(){
+        return apiService.getStyle();
     }
 
 }

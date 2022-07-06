@@ -1,23 +1,31 @@
 package com.alan.webclientpratice.dto.match.entity;
 
-import com.alan.webclientpratice.dto.MatchInfoPk;
 import com.alan.webclientpratice.dto.match.ChallengeResponse;
 import com.alan.webclientpratice.dto.match.PerksResponse;
 import com.alan.webclientpratice.dto.match.TeamResponse;
-import com.alan.webclientpratice.mapper.JsonToJpaConverter;
+import com.alan.webclientpratice.mapper.converter.challenge.ChallengeConverter;
+import com.alan.webclientpratice.mapper.converter.perk.PerkDataConverter;
+import com.alan.webclientpratice.mapper.converter.team.TeamConverter;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
-@IdClass(MatchInfoPk.class)
 @Entity
 @Table(name = "MATCH_INFO")
-public class MatchInfoDto {
+@EqualsAndHashCode
+@NamedEntityGraph(name = "MatchInfoWithMetaData",attributeNodes = @NamedAttributeNode("meta"))
+public class MatchInfoDto implements Serializable {
+
+    private static final long serialVersionUID = 1l;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column
     private Long gameCreation;
@@ -28,7 +36,7 @@ public class MatchInfoDto {
     @Column
     private Long gameEndTimestamp;
 
-    @Id
+    @Column
     private Long gameId;
 
     @Column
@@ -57,8 +65,9 @@ public class MatchInfoDto {
     @Column
     private Integer bountyLevel;
 
-    @Column
-    @Convert(converter = JsonToJpaConverter.class)
+    @Column(length = 6000)
+    @Lob
+    @Convert(converter = ChallengeConverter.class)
     private ChallengeResponse challenges;
 
     @Column
@@ -220,7 +229,8 @@ public class MatchInfoDto {
     @Column
     private Integer pentaKills;
 
-    @Column
+    @Column(length = 3000)
+    @Convert(converter = PerkDataConverter.class)
     private PerksResponse perks;
 
     @Column
@@ -235,7 +245,7 @@ public class MatchInfoDto {
     @Column
     private Integer profileIcon;
 
-    @Id
+    @Column
     private String puuid;
 
     @Column
@@ -376,15 +386,15 @@ public class MatchInfoDto {
     @Column
     private String queueId;
 
-    @Column
-    @Convert(converter = JsonToJpaConverter.class)
+    @Column(length = 2000)
+    @Convert(converter = TeamConverter.class)
     private List<TeamResponse> teams;
 
     @Column
     private String tournamentCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "match_id")
+    @JoinColumn(name = "MATCH_ID")
     private MatchMetaDataDto meta;
 
     @Builder

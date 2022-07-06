@@ -3,9 +3,11 @@ package com.alan.webclientpratice.dto.match;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class ObjectivesResponse {
+public class ObjectivesResponse implements Serializable {
 
     private ObjectiveResponse baron;
     private ObjectiveResponse champion;
@@ -13,8 +15,9 @@ public class ObjectivesResponse {
     private ObjectiveResponse inhibitor;
     private ObjectiveResponse riftHerald;
     private ObjectiveResponse tower;
+
     @Data
-    private static class ObjectiveResponse {
+    private static class ObjectiveResponse implements Serializable {
         private Boolean first;
         private Integer kills;
     }

@@ -1,6 +1,6 @@
 package com.alan.webclientpratice.dto.perk;
 
-import com.alan.webclientpratice.mapper.StringArrayConverter;
+import com.alan.webclientpratice.mapper.converter.StringArrayConverter;
 import lombok.*;
 
 import javax.persistence.*;
@@ -24,13 +24,13 @@ public class PerkDto {
     @Column(name = "MAJOR_CHANGE_PATCH_VERSION")
     private String majorChangePatchVersion;
 
-    @Column
+    @Column(length = 1000)
     private String tooltip;
 
-    @Column(name = "SHORT_DESC ")
+    @Column(name = "SHORT_DESC ",length = 1000)
     private String shortDesc;
 
-    @Column(name = "LONG_DESC")
+    @Column(name = "LONG_DESC",length = 1000)
     private String longDesc;
 
     @Column(name = "ICON_PATH")
