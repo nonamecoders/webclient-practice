@@ -10,7 +10,6 @@ import com.alan.webclientpratice.mapper.MatchInfoDataMapper;
 import com.alan.webclientpratice.repository.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
