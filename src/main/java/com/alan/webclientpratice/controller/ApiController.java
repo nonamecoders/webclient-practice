@@ -9,7 +9,6 @@ import com.alan.webclientpratice.dto.perk.PerkDto;
 import com.alan.webclientpratice.service.ApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,20 +80,6 @@ public class ApiController {
         log.info("s : {}", tag);
 
         return apiService.getChampionList(tag);
-    }
-
-    @CacheEvict(value = "champion", allEntries = true)
-    @GetMapping("evict/champion")
-    public String cacheEvict(){
-
-        return "delete";
-    }
-
-    @CacheEvict(value = "rank", allEntries = true)
-    @GetMapping("evict/rank")
-    public String cacheEvictRank(){
-
-        return "delete";
     }
 
     @GetMapping("perk")
